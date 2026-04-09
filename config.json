@@ -1,0 +1,15 @@
+{
+    "window_title": "Teleprompter UNIR",
+    "width": 1100,
+    "height": 500,
+    "bg_color": "black",
+    "fg_color": "white",
+    "font_family": "Arial",
+    "font_size": 28,
+    "padding_x": 30,
+    "padding_y": 20,
+    "always_on_top": true,
+    "transparency": 0.95,
+    "scroll_interval_ms": 100,
+    "initial_speed": 1
+}
