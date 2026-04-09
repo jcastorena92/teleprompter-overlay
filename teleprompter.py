@@ -1,14 +1,26 @@
+"""
+Teleprompter OBS
+
+Custom Python teleprompter designed for:
+- OBS recording
+- Minimal eye movement
+- Ghost mode (transparent overlay)
+
+Author: Juan Carlos Castorena
+"""
+
 import json
 import argparse
 import tkinter as tk
 from pathlib import Path
 import textwrap
 
-
+# Get the directory where this script is located
 BASE_DIR = Path(__file__).resolve().parent
+# Default configuration file path
 DEFAULT_CONFIG_PATH = BASE_DIR / "config.json"
 
-
+# Default configuration settings for the teleprompter application
 DEFAULT_CONFIG = {
     "window_title": "Teleprompter OBS",
     "width": 1000,
@@ -44,6 +56,15 @@ DEFAULT_CONFIG = {
 
 
 def load_config(config_path: Path) -> dict:
+    """
+    Load configuration from JSON file, merging with defaults.
+
+    Args:
+        config_path: Path to the JSON configuration file.
+
+    Returns:
+        Dictionary with merged configuration (defaults + user config).
+    """
     if config_path.exists():
         try:
             with config_path.open("r", encoding="utf-8") as file:
@@ -57,6 +78,15 @@ def load_config(config_path: Path) -> dict:
 
 
 def load_text(file_path: Path) -> str:
+    """
+    Load text content from file.
+
+    Args:
+        file_path: Path to the text file to load.
+
+    Returns:
+        String containing the file content or an error message.
+    """
     if not file_path.exists():
         return "ERROR: No se encontró el archivo de guion."
 
@@ -69,6 +99,16 @@ def load_text(file_path: Path) -> str:
 
 
 def wrap_text_smart(text: str, max_chars: int) -> str:
+    """
+    Wrap text intelligently preserving paragraph structure.
+
+    Args:
+        text: The text to wrap.
+        max_chars: Maximum characters per line.
+
+    Returns:
+        Wrapped text with preserved paragraphs.
+    """
     wrapped_paragraphs = []
 
     for paragraph in text.splitlines():
@@ -76,6 +116,7 @@ def wrap_text_smart(text: str, max_chars: int) -> str:
             wrapped_paragraphs.append("")
             continue
 
+        # Wrap without breaking words or hyphens
         wrapped = textwrap.fill(
             paragraph,
             width=max_chars,
@@ -88,24 +129,53 @@ def wrap_text_smart(text: str, max_chars: int) -> str:
 
 
 class Teleprompter:
+    """
+    Main teleprompter application.
+
+    Handles:
+    - UI rendering (Tkinter canvas)
+    - Text scrolling logic
+    - Ghost mode overlay
+    - Keyboard interaction
+    """
+
     def __init__(self, root: tk.Tk, text_content: str, config: dict):
+        """
+        Initialize the teleprompter UI and state.
+
+        Args:
+            root: The Tkinter root window.
+            text_content: The script text to display.
+            config: Configuration dictionary.
+        """
         self.root = root
         self.config = config
         self.raw_text_content = text_content
 
+        # Initialize playback state
         self.running = bool(config["start_running"])
         self.speed = float(config["initial_speed"])
         self.scroll_position = 0.0
 
+        # Configure main window
         self.root.title(config["window_title"])
         self.root.geometry(f"{config['width']}x{config['height']}")
         self.root.configure(bg=config["bg_color"])
         self.root.attributes("-topmost", config["always_on_top"])
+
+        # Ghost mode:
+        # Uses transparency and overlay positioning to make the teleprompter
+        # less visually intrusive for the user while recording.
+        # Note: this does not guarantee invisibility in OBS Display Capture.
+        # To keep it out of the recording, use Window Capture, another monitor,
+        # or keep the teleprompter outside the captured region.
         self.root.attributes("-alpha", config["transparency"])
 
+        # Create main frame
         self.main_frame = tk.Frame(self.root, bg=config["bg_color"])
         self.main_frame.pack(fill="both", expand=True)
 
+        # Initialize status bar
         self.status_var = tk.StringVar()
         self.status_var.set(self._build_status_text())
 
@@ -124,11 +194,13 @@ class Teleprompter:
                 pady=8,
             )
 
+            # Place status bar at top or bottom
             if config.get("status_bar_position", "bottom") == "top":
                 self.status_label.pack(side="top", fill="x")
             else:
                 self.status_label.pack(side="bottom", fill="x")
 
+        # Create canvas for text rendering
         self.canvas = tk.Canvas(
             self.main_frame,
             bg=config["bg_color"],
@@ -141,16 +213,20 @@ class Teleprompter:
 
         self._bind_keys()
 
+        # Initialize UI after window is drawn
         self.root.after(100, self._initialize_ui)
+        # Start scroll loop
         self.root.after(config["scroll_interval_ms"], self.scroll_loop)
 
     def _initialize_ui(self):
+        """Initialize UI after window is created."""
         self.root.focus_force()
         self.canvas.focus_force()
         self._draw_text()
         self._show_status_temporarily()
 
     def _bind_keys(self):
+        """Bind keyboard shortcuts to their respective handler functions."""
         self.root.bind_all("<space>", self.toggle)
         self.root.bind_all("<Up>", self.speed_up)
         self.root.bind_all("<Down>", self.speed_down)
@@ -166,6 +242,12 @@ class Teleprompter:
         self.root.bind("<Configure>", self._on_resize)
 
     def _build_status_text(self) -> str:
+        """
+        Build status bar text with current state and controls.
+
+        Returns:
+            Formatted string with status information and key bindings.
+        """
         state = "REPRODUCIENDO" if self.running else "PAUSADO"
         return (
             f"{state} | Velocidad: {self.speed:.1f} | "
@@ -174,13 +256,16 @@ class Teleprompter:
         )
 
     def update_status(self):
+        """Update status bar display and show it temporarily."""
         self.status_var.set(self._build_status_text())
         self._show_status_temporarily()
 
     def _show_status_temporarily(self):
+        """Show status bar temporarily if auto-hide is enabled."""
         if not self.status_label or not self.config.get("auto_hide_status_bar", False):
             return
 
+        # Repack status bar
         self.status_label.pack_forget()
 
         if self.config.get("status_bar_position", "bottom") == "top":
@@ -188,19 +273,28 @@ class Teleprompter:
         else:
             self.status_label.pack(side="bottom", fill="x")
 
+        # Cancel previous hide job
         if self.status_hide_job:
             self.root.after_cancel(self.status_hide_job)
 
+        # Schedule auto-hide
         hide_ms = int(self.config.get("status_bar_hide_ms", 1800))
         self.status_hide_job = self.root.after(
             hide_ms, self._hide_status_bar_if_running
         )
 
     def _hide_status_bar_if_running(self):
+        """Hide status bar if playback is running."""
         if self.status_label and self.running:
             self.status_label.pack_forget()
 
     def _estimate_max_chars(self) -> int:
+        """
+        Estimate maximum characters per line based on canvas width.
+
+        Returns:
+            Maximum number of characters that fit on one line.
+        """
         text_width = int(self.config["text_width"])
         font_size = int(self.config["font_size"])
 
@@ -208,6 +302,12 @@ class Teleprompter:
         return estimated
 
     def _get_dynamic_font_size(self):
+        """
+        Adjust font size based on longest word length.
+
+        Returns:
+            Integer font size adjusted for content.
+        """
         words = self.raw_text_content.split()
         if not words:
             return self.config["font_size"]
@@ -218,6 +318,7 @@ class Teleprompter:
         base = self.config["font_size"]
         min_size = self.config.get("min_font_size", 16)
 
+        # Reduce font size for long words
         if length > 14:
             return max(base - 6, min_size)
         elif length > 12:
@@ -228,10 +329,22 @@ class Teleprompter:
             return base
 
     def _get_wrapped_text(self):
+        """
+        Get text wrapped to appropriate line width.
+
+        Returns:
+            Wrapped text string.
+        """
         max_chars = self._estimate_max_chars()
         return wrap_text_smart(self.raw_text_content, max_chars=max_chars)
 
     def _reading_window_geometry(self):
+        """
+        Calculate the reading window rectangle coordinates.
+
+        Returns:
+            Tuple of (left, top, right, bottom) coordinates in pixels.
+        """
         canvas_w = self.canvas.winfo_width()
         canvas_h = self.canvas.winfo_height()
 
@@ -239,13 +352,16 @@ class Teleprompter:
         lines = self.config.get("reading_window_lines", 4)
         line_factor = self.config.get("line_height_factor", 1.35)
 
+        # Calculate reading window height
         line_px = font_size * line_factor
         window_h = int(lines * line_px)
 
+        # Calculate vertical position
         center_y = canvas_h // 2 + int(self.config.get("reading_window_offset_y", 0))
         top = max(0, center_y - window_h // 2)
         bottom = min(canvas_h, center_y + window_h // 2)
 
+        # Calculate horizontal position
         ghost_window_width = int(
             self.config.get("ghost_window_width", self.config["text_width"] + 60)
         )
@@ -256,6 +372,7 @@ class Teleprompter:
         return left, top, right, bottom
 
     def _draw_ghost_masks(self):
+        """Draw dimmed areas outside the reading window (ghost mode)."""
         if not self.config.get("ghost_mode", True):
             return
 
@@ -266,6 +383,7 @@ class Teleprompter:
         stipple_style = "gray50"
         dim_color = self.config.get("dim_color", "black")
 
+        # Top mask
         self.canvas.create_rectangle(
             0,
             0,
@@ -276,6 +394,7 @@ class Teleprompter:
             stipple=stipple_style,
         )
 
+        # Bottom mask
         self.canvas.create_rectangle(
             0,
             bottom,
@@ -286,6 +405,7 @@ class Teleprompter:
             stipple=stipple_style,
         )
 
+        # Left mask
         self.canvas.create_rectangle(
             0,
             top,
@@ -296,6 +416,7 @@ class Teleprompter:
             stipple=stipple_style,
         )
 
+        # Right mask
         self.canvas.create_rectangle(
             right,
             top,
@@ -307,11 +428,13 @@ class Teleprompter:
         )
 
     def _draw_guide_line(self):
+        """Draw a guide line in the center of the reading window."""
         if not self.config.get("show_guide_line", False):
             return
 
         left, top, right, bottom = self._reading_window_geometry()
 
+        # Calculate guide line vertical position
         guide_y = (
             top + ((bottom - top) // 2) + int(self.config.get("guide_line_offset_y", 0))
         )
@@ -326,17 +449,20 @@ class Teleprompter:
         )
 
     def _draw_text(self):
+        """Render text on canvas with all visual effects (ghost mode, guide line)."""
         self.canvas.delete("all")
 
         canvas_width = self.canvas.winfo_width()
         if canvas_width < 10:
             return
 
+        # Calculate text position
         text_x = canvas_width // 2
         text_y = self.config.get("top_spacer", 120) - self.scroll_position
         dynamic_size = self._get_dynamic_font_size()
         wrapped_text = self._get_wrapped_text()
 
+        # Draw main text
         self.text_id = self.canvas.create_text(
             text_x,
             text_y,
@@ -348,13 +474,16 @@ class Teleprompter:
             anchor="n",
         )
 
+        # Draw visual elements
         self._draw_ghost_masks()
         self._draw_guide_line()
 
     def _on_resize(self, event=None):
+        """Redraw text when window is resized."""
         self._draw_text()
 
     def toggle(self, event=None):
+        """Toggle playback on/off (spacebar)."""
         self.running = not self.running
         self.update_status()
 
@@ -362,26 +491,36 @@ class Teleprompter:
             self._show_status_temporarily()
 
     def speed_up(self, event=None):
+        """Increase scroll speed (up arrow)."""
         if self.speed < 5.0:
             self.speed += 0.2
         self.update_status()
 
     def speed_down(self, event=None):
+        """Decrease scroll speed (down arrow)."""
         if self.speed > 0.2:
             self.speed -= 0.2
         self.update_status()
 
     def manual_down(self, event=None):
+        """Scroll down manually (PageDown)."""
         self.scroll_position += 40
         self._draw_text()
         self._show_status_temporarily()
 
     def manual_up(self, event=None):
+        """Scroll up manually (PageUp)."""
         self.scroll_position = max(0, self.scroll_position - 40)
         self._draw_text()
         self._show_status_temporarily()
 
     def on_mousewheel(self, event):
+        """
+        Handle mouse wheel scrolling.
+
+        Args:
+            event: Mouse wheel event object.
+        """
         if event.delta < 0:
             self.scroll_position += 40
         else:
@@ -390,33 +529,50 @@ class Teleprompter:
         self._show_status_temporarily()
 
     def reset_position(self, event=None):
+        """Reset scroll position to top (r key)."""
         self.scroll_position = 0.0
         self._draw_text()
         self.update_status()
 
     def close(self, event=None):
+        """Close application (Escape key)."""
         self.root.destroy()
 
     def font_up(self, event=None):
+        """Increase font size (+ key)."""
         self.config["font_size"] = min(self.config["font_size"] + 2, 72)
         self._draw_text()
         self._show_status_temporarily()
 
     def font_down(self, event=None):
+        """Decrease font size (- key)."""
         min_size = self.config.get("min_font_size", 16)
         self.config["font_size"] = max(self.config["font_size"] - 2, min_size)
         self._draw_text()
         self._show_status_temporarily()
 
     def scroll_loop(self):
+        # Main animation loop (runs continuously using Tkinter's after scheduler)
         if self.running:
+            # Update scroll position based on speed
             self.scroll_position += self.config["scroll_step"] * self.speed
             self._draw_text()
 
+        # Schedule next frame
         self.root.after(self.config["scroll_interval_ms"], self.scroll_loop)
 
 
 def parse_args():
+    """
+    CLI interface to allow flexible usage from terminal
+
+    Parse command line arguments.
+
+    Returns:
+        Parsed arguments object with 'file' and 'config' attributes.
+
+    """
+
     parser = argparse.ArgumentParser(description="Teleprompter para OBS")
     parser.add_argument("--file", type=str, help="Ruta del archivo de guion")
     parser.add_argument(
@@ -426,11 +582,14 @@ def parse_args():
 
 
 def main():
+    # Entry point: loads config, reads script, and launches UI
     args = parse_args()
 
+    # Load configuration
     config_path = Path(args.config) if args.config else DEFAULT_CONFIG_PATH
     config = load_config(config_path)
 
+    # Load script text
     if args.file:
         script_path = Path(args.file)
         text_content = load_text(script_path)
@@ -446,6 +605,7 @@ def main():
 
     print("Longitud del texto cargado:", len(text_content))
 
+    # Create and run application
     root = tk.Tk()
     Teleprompter(root, text_content, config)
     root.mainloop()
