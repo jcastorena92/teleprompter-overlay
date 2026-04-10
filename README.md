@@ -92,7 +92,7 @@ python teleprompter.py --file guion.txt --config config_obs.json
 * Space: start / pause
 * Up / Down: adjust speed
 * PageUp / PageDown: manual scroll
-* + / -: adjust font size
+* Use + / - to adjust font size
 * r: reset position
 * Esc: exit
 
@@ -137,7 +137,6 @@ Background in engineering, currently transitioning into translation and technica
 MIT License © 2026 Juan Carlos Castorena Avalos
 
 ---
-
 
 ## Notes
 
