@@ -145,3 +145,5 @@ MIT License © 2026 Juan Carlos Castorena Avalos
 This project was built to solve a practical workflow problem: recording structured content while maintaining a natural delivery.
 
 It is part of a broader interest in building tools for language and content workflows.
+
+Lastly, the current implementation includes some console/status messages in SPANISH. These user-facing strings are easy to customize and can be translated to any preferred language.
