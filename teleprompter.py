@@ -6,7 +6,8 @@ Custom Python teleprompter designed for:
 - Minimal eye movement
 - Ghost mode (transparent overlay)
 
-Author: Juan Carlos Castorena
+Author: Juan Carlos Castorena Avalos
+License: MIT
 """
 
 import json

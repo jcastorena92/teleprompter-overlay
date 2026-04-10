@@ -126,11 +126,18 @@ Behavior can be customized via a JSON file:
 
 ## Author
 
-Juan Carlos Castorena
+Juan Carlos Castorena Avalos
 
 Background in engineering, currently transitioning into translation and technical tooling.
 
 ---
+
+## License
+
+MIT License © 2026 Juan Carlos Castorena Avalos
+
+---
+
 
 ## Notes
 
