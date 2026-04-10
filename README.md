@@ -1,4 +1,4 @@
-# Teleprompter OBS
+# Teleprompter Overlay
 
 Custom Python teleprompter designed for OBS recording, focused on reducing eye movement and improving delivery when presenting or recording content.
 
