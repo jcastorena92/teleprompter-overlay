@@ -113,8 +113,6 @@ Behavior can be customized via a JSON file:
 }
 ```
 
----
-
 ## Use cases
 
 * video recording
@@ -128,7 +126,11 @@ Behavior can be customized via a JSON file:
 
 Juan Carlos Castorena Avalos
 
-Background in engineering, currently transitioning into translation and technical tooling.
+---
+
+## Development history
+
+This public repository preserves the original development history of the project. The commit chain was rewritten only to remove non-public course-specific script files from the initial version before publication.
 
 ---
 
