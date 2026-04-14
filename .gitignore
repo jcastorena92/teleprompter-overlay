@@ -15,5 +15,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Archivos internos
 scripts/
 *.txt
+
+# Mantener archivo de dependencias
+!requirements.txt

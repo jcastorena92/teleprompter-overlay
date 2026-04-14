@@ -1,77 +1,47 @@
-# Teleprompter Overlay
+# Teleprompter Overlay for OBS
 
-Lightweight Python overlay designed for OBS recording, focused on reducing eye movement and improving delivery during presentations.
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/status-stable-success)
+![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen)
 
----
+> Lightweight, customizable teleprompter with "ghost mode" for OBS-based recording.
 
-## Problem
-
-When recording videos or presentations, reading from a script often leads to:
-
-* unnatural eye movement
-* loss of flow while speaking
-* constant switching between windows
-
-Most available solutions are either hardware-based, expensive, or not well adapted to OBS workflows.
+A Python-based teleprompter designed for real-world content creation, including video recording, academic presentations, and voice-over work.
 
 ---
 
-## Solution
+## Key Features at a Glance
 
-This project provides a lightweight teleprompter implemented in Python with:
-
-* a centered reading window
-* smooth automatic scrolling
-* keyboard-based control
-* a configurable interface via JSON
-
-It is designed to work alongside OBS without disrupting the recording workflow.
+- Centered text optimized for eye movement  
+- Smooth auto-scroll  
+- Narrow reading column  
+- Ghost mode (invisible in OBS recordings)
 
 ---
 
-## Features
+## Demo
 
-* Adjustable reading window
-* Narrow text layout for better focus
-* Optional ghost mode (dimmed surrounding area)
-* Guide line for consistent pacing
-* Scroll speed control
-* Dynamic font size adjustment
-* Optional status bar with auto-hide
+![demo](docs/demo.gif)
+
+> Demo preview (see docs/demo.gif)
 
 ---
 
-## How it works
-
-The application is built using:
-
-* `tkinter` for the interface
-* a canvas-based rendering system for text
-* an event loop (`after`) for smooth scrolling
-
-The “ghost mode” uses layered drawing and dimmed regions to guide focus toward a central reading area.
-
----
-
-## Installation
-
-Clone the repository:
+## Quick Start
 
 ```bash
-git clone https://github.com/jcastorena92/teleprompter-obs.git
-cd teleprompter-obs
-```
+git clone https://github.com/jcastorena92/teleprompter-obs-clean.git
+cd teleprompter-obs-clean
 
-Create a virtual environment (recommended):
-
-```bash
 python -m venv venv
-venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+python teleprompter.py
 ```
 
-No external dependencies are required.
-
----
+> This project runs using only Python’s built-in libraries. The `requirements.txt` file is included for convenience, even though no extra installation is needed — you can safely skip this step.
 
 ## Usage
 
@@ -87,14 +57,63 @@ python teleprompter.py --file guion.txt --config config_obs.json
 
 ---
 
+## Problem
+
+When recording videos or presentations, reading from a script often leads to:
+
+- unnatural eye movement
+- loss of flow while speaking
+- constant switching between windows
+
+Most available solutions are either hardware-based, expensive, or not well adapted to OBS use cases.
+
+---
+
+## Solution
+
+This project provides a lightweight teleprompter implemented in Python with:
+
+- a centered reading window
+- smooth automatic scrolling
+- keyboard-based control
+- a configurable interface via JSON
+
+It is designed to work alongside OBS without disrupting the recording workflow.
+
+---
+
+## Features
+
+- Adjustable reading window
+- Narrow text layout for better focus
+- Optional ghost mode (dimmed surrounding area)
+- Guide line for consistent pacing
+- Scroll speed control
+- Dynamic font size adjustment
+- Optional status bar with auto-hide
+
+---
+
+## How it works
+
+The application is built using:
+
+- `tkinter` for the interface
+- a canvas-based rendering system for text
+- an event loop (`after`) for smooth scrolling
+
+The “ghost mode” uses layered drawing and dimmed regions to guide focus toward a central reading area.
+
+---
+
 ## Controls
 
-* Space: start / pause
-* Up / Down: adjust speed
-* PageUp / PageDown: manual scroll
-* Use + / - to adjust font size
-* r: reset position
-* Esc: exit
+- Space: start / pause
+- Up / Down: adjust speed
+- PageUp / PageDown: manual scroll
+- Use + / - to adjust font size
+- r: reset position
+- Esc: exit
 
 ---
 
@@ -113,24 +132,36 @@ Behavior can be customized via a JSON file:
 }
 ```
 
+---
+
 ## Use cases
 
-* video recording
-* academic presentations
-* voice-over work
-* script-based delivery
+- video recording
+- academic presentations
+- voice-over work
+- script-based delivery
 
 ---
 
-## Author
+## Notes
 
-Juan Carlos Castorena Avalos
+This project was built to solve a practical workflow problem: recording structured content while maintaining a natural delivery.
+
+The current implementation includes some console/status messages in Spanish. These user-facing strings are easy to customize and can be translated to any preferred language.
 
 ---
 
 ## Development history
 
 This public repository preserves the original development history of the project. The commit chain was rewritten only to remove non-public course-specific script files from the initial version before publication.
+
+## Possible Future Improvements
+
+- GUI controls (pause, speed, positioning)
+- Voice control integration
+- Dynamic script loading
+- Multi-language UI support
+- OBS plugin integration
 
 ---
 
@@ -140,10 +171,13 @@ MIT License © 2026 Juan Carlos Castorena Avalos
 
 ---
 
-## Notes
+## Author
 
-This project was built to solve a practical workflow problem: recording structured content while maintaining a natural delivery.
+Juan Carlos Castorena Avalos
 
-It is part of a broader interest in building tools for language and content workflows.
+- Aerospace Engineer with specialization in CFD
+- Background in languages and translation technologies
+- Focused on text processing, OCR, and automation tools
 
-Lastly, the current implementation includes some console/status messages in SPANISH. These user-facing strings are easy to customize and can be translated to any preferred language.
+GitHub: [github.com/jcastorena92](https://github.com/jcastorena92)  
+LinkedIn: [linkedin.com/in/juan-carlos-casava](https://www.linkedin.com/in/juan-carlos-casava)

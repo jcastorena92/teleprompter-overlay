@@ -1,0 +1,6 @@
+# Teleprompter Overlay
+# No external dependencies required
+
+# Optional (for future improvements)
+# pillow
+# keyboard
